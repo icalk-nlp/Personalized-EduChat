@@ -1,15 +1,12 @@
 # 作者:lxb
 import os
 from typing import List
-
-import openai
 from hanlp_restful import HanLPClient
 from langchain import FAISS
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import Document
 from weaviate import UnexpectedStatusCodeException
 
+from config import Config
 from utils.embedding import get_embedding
 from utils.pdf_utils.slice.ContentSlice import ContentSlice
 from utils.pdf_utils.slice.OtherSlice import OtherSlice
@@ -214,7 +211,7 @@ class FormattedPdf:
             else:
                 content = slice.get_text()
                 if add_keyphrase:
-                    HanLP = HanLPClient('https://www.hanlp.com/api', auth='Mjg4OUBiYnMuaGFubHAuY29tOlBicUxET2FlNXlhRmxrbEk=', language='zh')
+                    HanLP = HanLPClient('https://www.hanlp.com/api', auth=Config().get('HANLP_ANTH_KEY'), language='zh')
                     keyphrase = list(HanLP.keyphrase_extraction(content).keys())
                     content += "\n关键词：" + str(keyphrase)
                 document = Document(page_content=content,
@@ -241,51 +238,3 @@ class FormattedPdf:
                     class_name,
                     vector=vectors[i]
                 )
-
-
-if __name__ == '__main__':
-    os.environ["http_proxy"] = "127.0.0.1:7890"
-    os.environ["https_proxy"] = "127.0.0.1:7890"
-    os.environ["OPENAI_PROXY"] = "http://127.0.0.1:7890"
-    openai.api_key = "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"
-    os.environ['OPENAI_API_KEY'] = openai.api_key
-    # import huggingface_hub
-    # from langchain.embeddings import ModelScopeEmbeddings
-    # huggingface_hub.login("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")
-    embeddings = get_embedding()
-    pdf_path = r"D:\pycharm_work\agent\合作社功能和社会主义市场经济.pdf"
-    url = "http://db.ringdata.net:28080"
-    class_name = "book"
-    property_list = ["text", "title"]
-    formatted_pdf = FormattedPdf(pdf_path)
-
-    # 存数据库
-    # client = get_client(url)
-    # try:
-    #     client.schema.delete_class(class_name)
-    # except UnexpectedStatusCodeException:
-    #     pass
-    # formatted_pdf.save_as_objects(url, class_name, remove_slash_n=True)
-
-    # 存faiss
-    documents = formatted_pdf.get_langchain_documents()
-    vector_db = FAISS.from_documents(documents, embeddings)
-
-    while True:
-        query = input("请输入查询语句：")
-        # HanLP = HanLPClient('https://www.hanlp.com/api', auth='Mjg4OUBiYnMuaGFubHAuY29tOlBicUxET2FlNXlhRmxrbEk=', language='zh')
-        # keyphrase = list(HanLP.keyphrase_extraction(query).keys())
-        # query += "\n关键词：" + str(keyphrase)
-        docs = vector_db.similarity_search(query)
-        docs ="\n".join(["\n标题：" + doc.metadata["title"] + "\n内容："+ doc.page_content for doc in docs])
-        # 使用LLM进行推理，得到回复
-        llm = ChatOpenAI(temperature=0.5)
-        # LLM一个教师的人设
-        prompt= f"""你现在是一位优秀的语文教师，你需要用你专业的知识认真分析你的学生提出的问题:“{query}”，然后进行详细并通俗易懂地讲解。
-可供你参考的资料如下:
-'''
-{docs}
-'''
-如果无法从中得到答案，请说“根据已知信息无法回答该问题”，不允许在答案中添加编造信息。"""
-        response = llm.call_as_llm(prompt)
-        print(response)
