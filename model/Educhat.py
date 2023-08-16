@@ -10,7 +10,7 @@ from document_store.faiss_store import FaissStore
 
 
 class Educhat(LLM):
-    _url: str = Config().get("SECRET_KEY")
+    _url: str = Config().get("EDUCHAT_SECRET_KEY")
     max_tokens: Optional[int]
     temperature: Optional[float]
     top_p: Optional[float]

@@ -99,7 +99,7 @@ if __name__ == '__main__':
     assistant_sys_msg, user_sys_msg = SimulationEducationAgent.get_sys_msgs(
         assistant_role_name, user_role_name, specified_task_content
     )
-    # TODO: 增加memory功能。建立不同的Educhat对象，进行交流
+    # TODO: 改进memory功能。建立不同的Educhat对象，进行交流
     assistant_agent = SimulationEducationAgent(assistant_sys_msg, Educhat())
     user_agent = SimulationEducationAgent(user_sys_msg, Educhat())
 
