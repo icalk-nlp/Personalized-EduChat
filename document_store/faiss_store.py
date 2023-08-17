@@ -84,8 +84,7 @@ class FaissStore(LocalStore):
 
 
 if __name__ == '__main__':
-    # faiss_store = FaissStore(Path(r'D:\pycharm_work\EduChat\test1.pdf'))
-    faiss_store = FaissStore(Path(r'D:\pycharm_work\EduChat\说话人预测一阶段实验结果反馈.docx'))
+    faiss_store = FaissStore(Path('document_path'))
     query = input('请输入问题：')
     docs = faiss_store.search(query)
     print(docs, len(docs))

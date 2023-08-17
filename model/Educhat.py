@@ -1,16 +1,13 @@
 from typing import Any, Optional, List, Mapping, Dict
 import requests
-import json
-from pathlib import Path
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
 
 from config import Config
-from document_store.faiss_store import FaissStore
 
 
 class Educhat(LLM):
-    _url: str = Config().get("EDUCHAT_SECRET_KEY")
+    _url: str = Config().get("EDUCHAT_SECRET_URL")
     max_tokens: Optional[int]
     temperature: Optional[float]
     top_p: Optional[float]
@@ -49,21 +46,4 @@ class Educhat(LLM):
             "temperature": self.temperature,
             "max_tokens": self.max_tokens
         }
-
-if __name__ == '__main__':
-    llm = Educhat()
-    # llm.predict_messages([HumanMessage(content="你好")])
-    faiss_store = FaissStore(Path(r'D:\pycharm_work\EduChat\test1.pdf'))
-    while True:
-        query = input("请输入你的问题：")
-        docss=faiss_store.get_relevant_documents(query)
-        docs = faiss_store.search(query)
-        prompt = f"""你现在是一位优秀的语文教师，你需要用你专业的知识认真分析你的学生提出的问题:“{query}”，然后进行详细并通俗易懂地讲解。
-可供你参考的资料如下:
-'''
-{docs}
-'''
-如果无法从中得到答案，请说“根据已知信息无法回答该问题”，不允许在答案中添加编造信息。"""
-        response = llm(prompt)
-        print(response)
 

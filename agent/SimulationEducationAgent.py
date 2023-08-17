@@ -1,7 +1,5 @@
-import os
-
 from model.Educhat import Educhat
-from prompt_template.prompt_template import assistant_inception_prompt, user_inception_prompt
+from model.prompt_template.prompt_template import assistant_inception_prompt, user_inception_prompt
 from typing import List
 from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
