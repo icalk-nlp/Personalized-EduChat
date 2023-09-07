@@ -1,3 +1,5 @@
+import argparse
+
 from model.Educhat import Educhat
 from model.prompt_template.prompt_template import assistant_inception_prompt, user_inception_prompt
 from typing import List
@@ -68,7 +70,7 @@ class SimulationEducationAgent:
         return output_message
 
 
-def get_specified_task_content(llm,assistant_role_name, user_role_name, task, word_limit):
+def get_specified_task_content(llm, assistant_role_name, user_role_name, task, word_limit):
     task_specifier_sys_msg = SystemMessage(content="你可以使任务更具体。")
     task_specifier_prompt = """这是{assistant_role_name}将帮助{user_role_name}完成的教学任务：{task}。
     请使用创造性和想象力来使其更具体。请在{word_limit}个字或更少的字数内回复指定的任务。不要添加其他内容。"""
@@ -88,11 +90,17 @@ def get_specified_task_content(llm,assistant_role_name, user_role_name, task, wo
 
 
 if __name__ == '__main__':
+    llm = Educhat()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--task", type=str, required=False, help="task to be completed",
+                        default="师生共同完成对唐诗的解读")
+    parser.add_argument("--word_limit", type=int, required=False, help="word limit for task brainstorming", default=100)
+    args = parser.parse_args()
+    task = args.task
+    word_limit = args.word_limit  # word limit for task brainstorming
     assistant_role_name = "Teacher"
     user_role_name = "Student"
-    task = "共同完成一堂探索鲁迅生涯的讨论"
-    word_limit = 30  # word limit for task brainstorming
-    specified_task_content = get_specified_task_content(assistant_role_name, user_role_name, task, word_limit)
+    specified_task_content = get_specified_task_content(llm, assistant_role_name, user_role_name, task, word_limit)
 
     assistant_sys_msg, user_sys_msg = SimulationEducationAgent.get_sys_msgs(
         assistant_role_name, user_role_name, specified_task_content
@@ -116,11 +124,10 @@ if __name__ == '__main__':
     user_msg = HumanMessage(content=f"{assistant_sys_msg.content}")
     user_msg = assistant_agent.step(user_msg)
 
-
     print(f"Original task prompt:\n{task}\n")
     print(f"Specified task prompt:\n{specified_task_content}\n")
 
-    chat_turn_limit, n = 10, 0
+    chat_turn_limit, n = 5, 0
     while n < chat_turn_limit:
         n += 1
         user_ai_msg = user_agent.step(assistant_msg)

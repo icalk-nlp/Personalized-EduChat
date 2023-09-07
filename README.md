@@ -1,4 +1,5 @@
 # Personalized-EduChat
+
 <p align="center" width="100%">
 <a href="https://www.educhat.top/" target="_blank"><img src="https://github.com/icalk-nlp/Personalized-EduChat/blob/main/docs/imgs/EduChat.jpeg" alt="EduChat" style="width: 50%; min-width: 300px; display: block; margin: auto;"></a>
 </p>
@@ -16,9 +17,9 @@
 - [介绍](#fountain_pen-介绍)
 - [开源清单](#spiral_notepad-开源清单)
 - [本地部署](#robot-本地部署)
-  - [下载安装](#下载安装)
-  - [配置](#配置)
-  - [使用示例](#使用示例)
+    - [下载安装](#下载安装)
+    - [配置](#配置)
+    - [使用示例](#使用示例)
 - [开源协议](#page_with_curl-开源协议、模型局限、使用限制与免责声明)
 - [引用](#引用)
 
@@ -26,31 +27,37 @@
 
 ## :fountain_pen: 介绍
 
-Personalized-EduChat是一个针对教育垂直领域的对话大模型项目，由华东师范大学计算机科学与技术学院的[EduNLP团队](https://www.educhat.top/#/)开发。该项目旨在贯彻“以人为本”的教育理念，通过预训练大模型为基底的教育对话大模型相关技术，融合多样化的教育垂直领域数据，提供个性化、引导式、身心全面发展的教育支持。
+Personalized-EduChat是一个针对教育垂直领域的对话大模型项目，由华东师范大学计算机科学与技术学院的[EduNLP团队](https://www.educhat.top/#/)
+开发。该项目旨在贯彻“以人为本”的教育理念，通过预训练大模型为基底的教育对话大模型相关技术，融合多样化的教育垂直领域数据，提供个性化、引导式、身心全面发展的教育支持。
 
 ### 目前已实现的功能有：
+
 1. 教材问答：上传教材文件，用户可通过对话的方式进行教材问答。
-2. 模拟教学：用户可通过对话的方式模拟教学场景，进行教学实践。
+2. 模拟教学：参考CAMEL，实现了一个简单的教学场景：两个Agent进行对话，其中一个Agent为教师，另一个Agent为学生。
 
 ### 待实现的功能有：
+
 1. 构建多智能体的个性化教育架构。
 2. 以网页端作为交互界面，实现个性化教育系统。
 
 ## :spiral_notepad: 开源清单
 
 ### 模型
+
 **注意：使用前按照模型介绍页面中的使用方法部分解密**
+
 - **educhat-search-002-7b**（近期开源）：在**educhat-sft-002-7b**基础上加入搜索功能
-- [**educhat-sft-002-7b**](https://huggingface.co/ecnu-icalk/educhat-sft-002-7b)：在educhat-base-002-7b基础上，使用我们构建的教育领域多技能数据微调后得到
+- [**educhat-sft-002-7b**](https://huggingface.co/ecnu-icalk/educhat-sft-002-7b)
+  ：在educhat-base-002-7b基础上，使用我们构建的教育领域多技能数据微调后得到
 - [**educhat-base-002-7b**](https://huggingface.co/ecnu-icalk/educhat-base-002-7b)：使用educhat-sft-002-data-osm数据训练得到
 - [**educhat-sft-002-13b**](https://huggingface.co/ecnu-icalk/educhat-sft-002-13b)：训练方法与educhat-sft-002-7b相同，模型大小升级为13B
-- [**educhat-base-002-13b**](https://huggingface.co/ecnu-icalk/educhat-base-002-13b)：训练方法与educhat-base-002-7b相同，模型大小升级为13B
+- [**educhat-base-002-13b**](https://huggingface.co/ecnu-icalk/educhat-base-002-13b)
+  ：训练方法与educhat-base-002-7b相同，模型大小升级为13B
 
 ### 数据
 
-- [**educhat-sft-002-data-osm**](https://huggingface.co/datasets/ecnu-icalk/educhat-sft-002-data-osm): 混合多个开源中英指令、对话数据，并去重后得到，约400w
-
-
+- [**educhat-sft-002-data-osm**](https://huggingface.co/datasets/ecnu-icalk/educhat-sft-002-data-osm):
+  混合多个开源中英指令、对话数据，并去重后得到，约400w
 
 ## :robot: 本地部署
 
@@ -80,7 +87,7 @@ pip install -r requirements.txt
 
 在 `config/config.yaml` 中配置你的`EDUCHAT_SECRET_URL`
 
-```python
+```bash
 # 该EDUCHAT_SECRET_URL为启动API服务得到的URL，即先运行educhat_api.py以获取URL
 EDUCHAT_SECRET_URL: 'YOUR_EDUCHAT_SECRET_URL'
 ```
@@ -104,6 +111,13 @@ python educhat_api.py
 python document_conversation.py --document_path ./test.pdf
 ```
 
+3. 简单的教学场景模拟（1个API服务易造成角色混乱，建议开启2个API服务）
+
+```bash
+# 回到项目根目录，然后运行simulation_conversation.py
+python simulation_conversation.py
+```
+
 #### 网页demo
 
 ```bash
@@ -111,10 +125,10 @@ cd server
 python educhat_gradio.py
 ```
 
-
 ## :page_with_curl: 开源协议、模型局限、使用限制与免责声明
 
-本项目所含代码采用[Apache 2.0](https://github.com/icalk-nlp/Personalized-EduChat/blob/main/LICENSE)协议，数据采用[CC BY-NC 4.0](https://github.com/icalk-nlp/EduChat/blob/main/DATA_LICENSE)协议。
+本项目所含代码采用[Apache 2.0](https://github.com/icalk-nlp/Personalized-EduChat/blob/main/LICENSE)
+协议，数据采用[CC BY-NC 4.0](https://github.com/icalk-nlp/EduChat/blob/main/DATA_LICENSE)协议。
 
 尽管我们对EduChat进行了优化，但仍存在以下问题，需要进行改进：
 
