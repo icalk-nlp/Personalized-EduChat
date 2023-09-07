@@ -28,9 +28,6 @@
 
 Personalized-EduChat是一个针对教育垂直领域的对话大模型项目，由华东师范大学计算机科学与技术学院的[EduNLP团队](https://www.educhat.top/#/)开发。该项目旨在贯彻“以人为本”的教育理念，通过预训练大模型为基底的教育对话大模型相关技术，融合多样化的教育垂直领域数据，提供个性化、引导式、身心全面发展的教育支持。
 
-**基础能力**：
-
-![image](https://github.com/icalk-nlp/Personalized-EduChat/blob/main/docs/imgs/基础能力.gif)
 
 ## :spiral_notepad: 开源清单
 
