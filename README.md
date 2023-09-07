@@ -28,6 +28,13 @@
 
 Personalized-EduChat是一个针对教育垂直领域的对话大模型项目，由华东师范大学计算机科学与技术学院的[EduNLP团队](https://www.educhat.top/#/)开发。该项目旨在贯彻“以人为本”的教育理念，通过预训练大模型为基底的教育对话大模型相关技术，融合多样化的教育垂直领域数据，提供个性化、引导式、身心全面发展的教育支持。
 
+### 目前已实现的功能有：
+1. 教材问答：上传教材文件，用户可通过对话的方式进行教材问答。
+2. 模拟教学：用户可通过对话的方式模拟教学场景，进行教学实践。
+
+### 待实现的功能有：
+1. 构建多智能体的个性化教育架构。
+2. 以网页端作为交互界面，实现个性化教育系统。
 
 ## :spiral_notepad: 开源清单
 
@@ -52,8 +59,8 @@ Personalized-EduChat是一个针对教育垂直领域的对话大模型项目，
 1. 环境检查
 
 ```bash
-# 使用conda安装环境，确保python版本为3.9以上
-conda create --name env_name python=3.9
+# 使用conda安装环境，确保python版本为3.9以上，并安装PyTorch>=2.0
+conda create --name env_name python=3.9  # env_name为创建环境的名称
 # 激活环境
 conda activate env_name
 ```
@@ -74,18 +81,11 @@ pip install -r requirements.txt
 在 `config/config.yaml` 中配置你的`EDUCHAT_SECRET_URL`
 
 ```python
-# 该EDUCHAT_SECRET_URL为启动API服务得到的URL
+# 该EDUCHAT_SECRET_URL为启动API服务得到的URL，即先运行educhat_api.py以获取URL
 EDUCHAT_SECRET_URL: 'YOUR_EDUCHAT_SECRET_URL'
 ```
 
 ### 使用示例
-
-#### 网页demo
-
-```bash
-cd server
-python educhat_gradio.py
-```
 
 #### 教材问答
 
@@ -101,8 +101,16 @@ python educhat_api.py
 
 ```bash
 # 回到项目根目录，然后运行document_conversation.py
-python document_conversation.py
+python document_conversation.py --document_path ./test.pdf
 ```
+
+#### 网页demo
+
+```bash
+cd server
+python educhat_gradio.py
+```
+
 
 ## :page_with_curl: 开源协议、模型局限、使用限制与免责声明
 
