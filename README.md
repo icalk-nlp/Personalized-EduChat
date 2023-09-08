@@ -98,6 +98,9 @@ EDUCHAT_SECRET_URL: 'YOUR_EDUCHAT_SECRET_URL'
 
 1. 启动 API 服务
 
+先下载对应的模型，放置sever目录下，然后启动API服务
+模型部署详情可参考[Educhat项目](https://github.com/icalk-nlp/EduChat)
+
 ```bash
 cd server
 # 启动 API 服务，这将返回一个url
