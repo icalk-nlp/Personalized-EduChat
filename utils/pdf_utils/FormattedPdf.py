@@ -1,12 +1,11 @@
 # 作者:lxb
 import os
-from typing import List
-from hanlp_restful import HanLPClient
-from langchain import FAISS
-from langchain.schema import Document
-from weaviate import UnexpectedStatusCodeException
+from typing import List, Union
 
-from config import Config
+from langchain.schema import Document
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfparser import PDFParser
+
 from utils.embedding import get_embedding
 from utils.pdf_utils.slice.ContentSlice import ContentSlice
 from utils.pdf_utils.slice.OtherSlice import OtherSlice
@@ -30,16 +29,27 @@ class FormattedPdf:
     _content_font_name: str
     _content_font_size: float
     _content_length: int
+    _directory_structure: List[Slice]
 
     def __init__(self, pdf_path):
         pages = [page for page in extract_pages(pdf_path)]
+        self._directory_structure = self.extract_directory_structure(pdf_path)
         self._preprocess(pages)
+
+    def extract_directory_structure(self, pdf_path):
+        with open(pdf_path, 'rb') as fp:
+            parser = PDFParser(fp)
+            doc = PDFDocument(parser)
+            self._directory_structure = []
+            for (level, title, dest, a, structelem) in doc.get_outlines():
+                self._directory_structure.append((level, title))
+        return self._directory_structure
 
     def _preprocess(self, pages):
         self._content_font_name, self._content_font_size, self._content_length = \
             FormattedPdf._get_content_font_and_size_and_length(pages)
 
-        # 得到尚未合并相邻slice list，所有页的slice都集中于该list中
+        # 得到尚未合并相邻content slice的slice list，所有页的slice都集中于该list中
         self._slice_list = self._pages_to_raw_slices(pages)
         # 合并相邻的相同类型的slices
         self._merge_slices()
@@ -55,10 +65,8 @@ class FormattedPdf:
                             if not (self._is_table(text_box) or FormattedPdf._is_page_number(page, text_box)):
                                 slices.append(ContentSlice(text_box))
                         elif self._is_title(text_box):
-                            slices.append(TitleSlice(text_box))
-                        else:
-                            if not (self._is_table(text_box) or FormattedPdf._is_page_number(page, text_box)):
-                                slices.append(OtherSlice(text_box))
+                            slices.append(TitleSlice(text_box, self._get_title_lever(text_box)))
+
         return slices
 
     @staticmethod
@@ -162,11 +170,23 @@ class FormattedPdf:
             return False
 
     # 判断是否为标题
-    def _is_title(self, text):
-        font_name, font_size = self._get_font_info(text)
-        return (font_name.lower().endswith("bold") or font_name.lower().endswith(
-            "medi")) or font_size > self._content_font_size
-        # FormattedPage.font_size_greater_than(font_size, self._content_font_size)
+    def _is_title(self, text_box):
+        # 非零、非空(非空字符串、非空列表、非空元组、非空字典、非空集合)、非None
+        if self._directory_structure:
+            for lever, title in self._directory_structure:
+                # 将文本开头的数字去除 1. 2. 3. 去除
+                # lstrip 的参数是一个字符串，表示去除开头的字符，可以是多个字符
+                if text_box.get_text().strip().replace("\n", " ").lstrip("0123456789. ").lower() in title.lower():
+                    return True
+        else:
+            font_name, font_size = self._get_font_info(text_box)
+            return (font_name.lower().endswith("bold") or font_name.lower().endswith(
+                "medi")) or font_size > self._content_font_size
+
+    def _get_title_lever(self, text_box):
+        for lever, title in self._directory_structure:
+            if text_box.get_text().strip() in title:
+                return lever
 
     def _merge_slices(self):
         result_list = []
@@ -201,8 +221,33 @@ class FormattedPdf:
     def get_all_slices(self):
         return self._slice_list
 
+    # 获取每一个主题的内容
+    def get_topic_contents(self):
+        topic_contents = []
+        slice_text = ""
+        for slice in self._slice_list:
+            if isinstance(slice, TitleSlice):
+                lever = slice.get_lever()
+                # 没有目录结构，则直接按照标题进行切分
+                if lever == 0:
+                    if slice_text != "":
+                        topic_contents.append(slice_text)
+                        slice_text = ""
+                else:
+                    if lever <= 1 and slice_text != "":
+                        print(slice.get_text())
+                        topic_contents.append(slice_text)
+                        slice_text = ""
+            else:
+                slice_text += slice.get_text()
+
+        if slice_text != "":
+            topic_contents.append(slice_text)
+
+        return topic_contents
+
     # 获取langchain格式的document
-    def get_langchain_documents(self, add_keyphrase=False):
+    def get_langchain_documents(self):
         documents = []
         last_title = None
         for slice in self._slice_list:
@@ -210,10 +255,6 @@ class FormattedPdf:
                 last_title = slice
             else:
                 content = slice.get_text()
-                if add_keyphrase:
-                    HanLP = HanLPClient('https://www.hanlp.com/api', auth=Config().get('HANLP_ANTH_KEY'), language='zh')
-                    keyphrase = list(HanLP.keyphrase_extraction(content).keys())
-                    content += "\n关键词：" + str(keyphrase)
                 document = Document(page_content=content,
                                     metadata={"title": last_title.get_text()
                                     if last_title is not None else None})
@@ -221,13 +262,16 @@ class FormattedPdf:
         return documents
 
     # 将最终的list[slice]存储到weaviate数据库中
-    def save_as_objects(self, url: str, class_name: str, remove_slash_n=False):
-        text_list = [slice.get_text() for slice in self._slice_list if isinstance(slice, ContentSlice) or isinstance(slice, OtherSlice)]
+    def save_to_weaviate(self, url: str, class_name: str, property: Union[str, list[str]],
+                         remove_slash_n=False):
+        text_list = [slice.get_text() for slice in self._slice_list if
+                     isinstance(slice, ContentSlice) or isinstance(slice, OtherSlice)]
         objects = []
         client = get_client(url)
+        content = property[0] if isinstance(property, list) else property
         for text in text_list:
             obj = {
-                "content": text.replace("\n", "") if remove_slash_n else text,
+                content: text.replace("\n", "") if remove_slash_n else text,
             }
             objects.append(obj)
         vectors = get_embedding().embed_documents(text_list)

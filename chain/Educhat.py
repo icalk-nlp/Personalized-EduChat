@@ -46,4 +46,3 @@ class Educhat(LLM):
             "temperature": self.temperature,
             "max_tokens": self.max_tokens
         }
-

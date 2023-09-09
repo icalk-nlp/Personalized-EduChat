@@ -1,7 +1,7 @@
 import argparse
 
-from model.Educhat import Educhat
-from model.prompt_template.prompt_template import assistant_inception_prompt, user_inception_prompt
+from chain.Educhat import Educhat
+from chain.prompt_template.prompt_template import assistant_inception_prompt, user_inception_prompt
 from typing import List
 from langchain.prompts.chat import (
     SystemMessagePromptTemplate,

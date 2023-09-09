@@ -3,7 +3,7 @@ from utils.weaviate import get_client
 
 
 def query_from_weavite(url, class_name, properties,
-                       limit=None, near_vector=None, where_filter=None, sort=None, query=None,alpha=0.75):
+                       limit=None, near_vector=None, where_filter=None, sort=None, query=None, alpha=0.75):
     client = get_client(url)
     query_content = client.query.get(class_name, properties)
     if where_filter:
@@ -17,6 +17,7 @@ def query_from_weavite(url, class_name, properties,
             )
         else:
             query_content = query_content.with_near_vector(near_vector)
+        # query_content = query_content.with_near_vector(near_vector)
     if sort:
         query_content = query_content.with_sort(sort)
     if limit:

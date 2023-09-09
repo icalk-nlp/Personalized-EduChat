@@ -1,10 +1,11 @@
 from pathlib import Path
 import argparse
 from langchain.chains.question_answering import load_qa_chain
+from langchain.memory import ConversationBufferMemory
 
 from document_store.faiss_store import FaissStore
-from model.Educhat import Educhat
-from model.prompt_template.prompt_template import answer_prompt
+from chain.Educhat import Educhat
+from chain.prompt_template.prompt_template import answer_prompt
 
 if __name__ == '__main__':
     llm = Educhat()
@@ -13,7 +14,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     faiss_store = FaissStore(Path(args.document_path))
 
-    from langchain.memory import ConversationBufferMemory
+
     memory = ConversationBufferMemory(memory_key="chat_history",
                                       input_key="human_input",
                                       return_messages=True)
@@ -25,4 +26,4 @@ if __name__ == '__main__':
         docs = faiss_store.get_relevant_documents(query)
         result = chain({"input_documents": docs, "human_input": query}, return_only_outputs=True)
         print(result)
-        print(chain.memory.buffer)
+        # print(chain.memory.buffer)
