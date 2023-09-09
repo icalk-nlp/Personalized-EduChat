@@ -1,7 +1,5 @@
-MAX_TOKENS: 2048
 # EDUCHAT_SECRET_URL为必填项，可以通过运行 server/educhat_api.py 生成
 EDUCHAT_SECRET_URL: 'YOUR_EDUCHAT_SECRET_URL'
 
 # 非必须，如果有自己的weaviate服务，可以填写
 #WEAVIATE_URL : "YOUR_WEAVIATE_URL"
-#HANLP_ANTH_KEY : "YOUR_HANLP_ANTH_KEY"
